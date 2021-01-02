@@ -274,3 +274,5 @@ TSWLatexianTemp*
 
 # Makeindex log files
 *.lpz
+shapes.network.pdf
+tikzlibraryshapes.network.code.tex

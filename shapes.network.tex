@@ -1,0 +1,268 @@
+%& pdflatex
+\documentclass{ltxdoc}
+\usepackage[british]{babel}
+
+\title{Network Diagram Shapes Library}
+\author{Dr Alun Moon}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, shapes.symbols, positioning,shadings,shadows}
+\usetikzlibrary{shapes.network}
+
+\usepackage{tcolorbox}
+\tcbuselibrary{minted}
+\usepackage{minted}
+
+\begin{document}
+\newminted{latex}{}
+\maketitle
+
+\begin{tikzpicture}[>=Latex,o/.tip={Rectangle}]
+	\draw (-4,01) node[draw,router,fill=blue!20,arrow fill=blue,inner sep=0pt] (r){R};
+	\draw (0,0) node[draw,switch,fill=green!20] (s) {$P_2$R};
+	\draw (4,1) node[draw,hub,arrow fill=green] (h) {Hub};
+	\node[draw,circle] at (0,2) (q) {PR};
+	\draw[{Rectangle[red]}-{Rectangle[blue]}]   (s) --
+		node[sloped,at start, above left,node font=\scriptsize,red]{192.168.0.1/24}
+		node[sloped,at end, below right, node font=\scriptsize,blue]{192.168.0.254/24}
+		(r);
+	\draw[blue,->]  (q) -- (r);
+	\draw[green] (s) -- (q);
+	\draw[{Rectangle}-{Rectangle}] (h) -- (s);
+
+	\draw (4,-4) node[draw,server] (www) {www};
+	\draw[{Rectangle}-{Rectangle}] (www) -- (s);
+
+	\draw (4,-2) node[draw,server] (dns) {$\mbox{DNS}_1$};
+	\draw[{Rectangle}-{Rectangle}] (dns) -- (s);
+
+	\draw (0,-2) node[draw,server] (nfs) {Network File Server (NFS)};
+	\draw[{Rectangle}-{Rectangle}] (nfs) -- (s);
+
+	\draw (5.5,-2) node[draw,server] (s1) {};
+	\draw[{Rectangle}-{Rectangle}] (s1) -- (dns);
+
+	\draw (nfs) -- (dns);
+
+	\draw (-4,-1) node[draw,pc] (pc) {PC};
+	\draw[o-o] (pc) -- (s);
+	\draw (pc) |- (www);
+\end{tikzpicture}
+
+
+
+\begin{abstract}
+	A TikZ shape library for drawing network diagrams.
+\end{abstract}
+
+\section{Installation}
+There should be  four files supplied:
+\begin{enumerate}
+	\item \texttt{shapes.network.tex}  --- The documentation and guide
+	\item \texttt{shapes.network.dtx}  --- The source for the library
+	\item \texttt{shapes.network.ins}  --- The docstrip batch file for
+		generating the library
+	\item \texttt{Makefile}  --- A makefile for automating building and
+		installation (installs to \verb:$HOME/texmf/tex:)
+\end{enumerate}
+
+%\tikzset{inner sep=0pt}
+\section{Usage}
+The library loads as any other shape library .
+\begin{latexcode}
+\usetikzlibrary{shapes.network}
+\end{latexcode}
+
+The shapes can then be used as node shapes in the usual fashion
+\begin{latexcode}
+\node[draw,router] (r1) {$R_1$};
+\end{latexcode}
+\begin{tikzpicture}
+\node[draw,router] (r1) {$R_1$};
+\end{tikzpicture}
+
+The \verb:fill: option is used to change the colour of the device.
+The colour of the arrows on the top of the device is given by the option
+\verb:arrow fill:
+\begin{latexcode}
+\node[draw,router,fill=blue!50,arrow fill=blue!50!black]{};
+\end{latexcode}
+
+\begin{tikzpicture}
+\node[draw,router,fill=blue!50,arrow fill=blue!50!black]{};
+\end{tikzpicture}
+
+Labels are displayed on the symbols, which try to adapt to fit the given text.
+I have found that it is best to set \verb:inner sep: to zero.\marginpar{The
+size adjustment \emph{needs} work!} for the router.
+\begin{latexcode}
+\node[draw,router,fill=blue!40,inner sep=0pt] {$R_1$};
+\end{latexcode}
+\begin{tikzpicture}
+\node[draw,router,fill=blue!40,inner sep=0pt] {$R_1$};
+\end{tikzpicture}
+
+The set of shapes is shown in table \ref{shapes.list}
+
+\begin{table}
+\begin{tabular}{lll}
+Router & \mintinline{latex}{\node[draw,router,fill=blue!35]{R1};} 
+       & \rule[-12pt]{0pt}{32pt}
+	   \tikz[baseline=0pt]\node[draw,router,fill=blue!35,inner sep=0pt]{R1}; \\
+Switch & \mintinline{latex}{\node[draw,switch,fill=blue!35]{S1};} 
+       & \rule[-12pt]{0pt}{32pt} \tikz[baseline=0pt]\node[draw,switch,fill=blue!35]{S1}; \\
+Hub    & \mintinline{latex}{\node[draw,hub,fill=blue!35]{H1};} 
+       & \rule[-12pt]{0pt}{32pt} \tikz[baseline=0pt]\node[draw,hub,fill=blue!35]{H1}; \\
+\hline
+Server & \mintinline{latex}{\node[draw,server,fill=yellow!35]{S1};} 
+       & \rule[-12pt]{0pt}{32pt} \tikz[baseline=0pt]\node[draw,server,fill=yellow!35]{S1}; \\
+PC     & \mintinline{latex}{\node[draw,pc,fill=yellow!35]{PC};} 
+       & \rule[-12pt]{0pt}{32pt} \tikz[baseline=0pt]\node[draw,pc,fill=yellow!35]{PC}; \\
+\end{tabular}
+\caption{Network device shapes}
+\label{shapes.list}
+\end{table}
+
+\clearpage
+\section{Network diagrams}
+Diagrams showing network configurations can be drawn using TikZ nodes and
+positioning.
+
+
+For example:
+\begin{latexcode}
+\begin{tikzpicture}
+\node[draw,cloud,aspect=2.5,ball color=red!50,drop shadow] (net) {The Internet};
+\node[draw,router,fill=blue!30,below=of net,label=below:Corporate ISP] (r) {$R_1$};
+\node[draw,switch,fill=blue!30,right=of r] (sw) {$S_1$};
+\node[draw,server,fill=yellow!35,right=of sw] (www) {www};
+\node[draw,server,fill=yellow!35,right=of www] (sql) {sql};
+\node[draw,server,fill=yellow!35,below=of sql] (nfs) {nfs};
+
+\draw (net) -- (r) -- (sw) -- (www);
+\draw (www) -- (sql);
+\draw (www) -- (nfs);
+
+\end{tikzpicture}
+\end{latexcode}
+\begin{tikzpicture}
+\node[draw,cloud,aspect=2.5,ball color=red!50,drop shadow] (net) {The Internet};
+\node[draw,router,fill=blue!30,below=of net,label=below:Corporate ISP] (r) {$R_1$};
+\node[draw,switch,fill=blue!30,right=of r] (sw) {$S_1$};
+\node[draw,server,fill=yellow!35,right=of sw] (www) {www};
+\node[draw,server,fill=yellow!35,right=of www] (sql) {sql};
+\node[draw,server,fill=yellow!35,below=of sql] (nfs) {nfs};
+
+\draw (net) -- (r) -- (sw) -- (www);
+\draw (www) -- (sql);
+\draw (www) -- (nfs);
+
+\end{tikzpicture}
+
+Using the ability to position nodes on edges, we can label the addresses of
+ports.
+
+\begin{latexcode}
+\begin{tikzpicture}
+\node[draw,router,fill=blue!30] (R1) {};
+\node[draw,switch,fill=blue!30,right=2in of R1] (sw) {};
+\draw (R1) --(sw) 
+	node[at start, font=\scriptsize, anchor=south west ] {192.168.1.254/24}
+	node[at end, font=\scriptsize, anchor=north east ] {192.168.1.254/24};
+\end{tikzpicture}
+\end{latexcode}
+
+\begin{tikzpicture}
+\node[draw,router,fill=blue!30] (R1) {};
+\node[draw,switch,fill=blue!30,right=2in of R1] (sw) {};
+\draw (R1) --(sw) 
+	node[at start, font=\scriptsize, anchor=south west ] {192.168.1.254/24}
+	node[at end, font=\scriptsize, anchor=north east ] {192.168.1.254/24};
+\end{tikzpicture}
+
+\section{The Shapes}
+
+The shapes and their defined anchors are shown below.
+
+\tikzset{
+shape example/.style= {color = black!30,
+draw,
+fill = yellow!30,
+line width = .3mm,
+inner xsep = 2cm,
+inner ysep = .5cm}
+}
+
+\subsection{Router}
+\begin{tikzpicture}
+	\node[name=r, shape=router, shape example, node font=\Huge]{Router};
+	\foreach \anchor/\placement in
+        {center/above, base/below, text/left,
+		 north/above, south/below, east/right, west/left,
+         south west/left, south east/right,
+	     north west/left, north east/right}
+        \draw[shift=(r.\anchor)] plot[mark=x] coordinates{(0,0)}
+                node[\placement] {\scriptsize\texttt{(.\anchor)}};
+\end{tikzpicture}
+
+\subsection{Switch}
+\begin{tikzpicture}
+	\node[name=r, shape=switch, shape example, node font=\Huge]{Switch};
+	\foreach \anchor/\placement in
+        {center/above, base/below, text/left,
+		 north/above, south/below, east/right, west/left,
+         south west/left, south east/right,
+	     north west/left, north east/right}
+        \draw[shift=(r.\anchor)] plot[mark=x] coordinates{(0,0)}
+                node[\placement] {\scriptsize\texttt{(.\anchor)}};
+\end{tikzpicture}
+
+\subsection{Hub}
+\begin{tikzpicture}
+	\node[name=r, shape=hub, shape example, node font=\Huge]{Hub};
+	\foreach \anchor/\placement in
+        {center/above, base/below, text/left,
+		 north/above, south/below, east/right, west/left,
+         south west/left, south east/right,
+	     north west/left, north east/right}
+        \draw[shift=(r.\anchor)] plot[mark=x] coordinates{(0,0)}
+                node[\placement] {\scriptsize\texttt{(.\anchor)}};
+\end{tikzpicture}
+
+\subsection{Server}
+\begin{tikzpicture}
+	\node[name=r, shape=server, shape example, node font=\Huge]{Server};
+	\foreach \anchor/\placement in
+        {center/above, base/below, text/left,
+		 north/above, south/below, east/right, west/left,
+         south west/left, south east/right,
+	     north west/left, north east/right}
+        \draw[shift=(r.\anchor)] plot[mark=x] coordinates{(0,0)}
+                node[\placement] {\scriptsize\texttt{(.\anchor)}};
+\end{tikzpicture}
+
+\subsection{PC}
+\begin{tikzpicture}
+	\node[name=r, shape=pc, shape example, node font=\Huge]{PC};
+	\foreach \anchor/\placement in
+        {center/above, base/below, text/left,
+		 north/above, south/below, east/right, west/left,
+         south west/left, south east/right,
+	     north west/left, north east/right}
+        \draw[shift=(r.\anchor)] plot[mark=x] coordinates{(0,0)}
+                node[\placement] {\scriptsize\texttt{(.\anchor)}};
+\end{tikzpicture}
+
+\appendix
+
+\begin{quotation}
+	\begin{itshape}
+	The code is a little rough and ready, I still have to work on edge cases
+	and aspect ratios.
+\end{itshape}
+\end{quotation}
+
+\DocInput{shapes.network.dtx}
+
+\end{document}
+

@@ -1,0 +1,670 @@
+% \section{Shape Library for TikZ}
+
+% As this is loaded as a \verb:.tex: file rather than a package (\verb:.sty:)
+% I have to set the at-character as a normal character for \emph{hidden} macro
+% names.
+%    \begin{macrocode}
+\makeatletter
+%    \end{macrocode}
+
+% \subsection{Arrows} I need some arrows to display on top of the devices,
+% routers, switches, and hubs.  I'm using |\pgftransformtriangle| later on,
+% which defines the $x$ and $y$ axes 1pt in length, so the arrows are scaled
+% to fit into the 1pt size.
+%
+% After some experimentation it just seemed easiest to define arrows on a
+% case-by-case basis rather than try a generic parametrised arrow
+
+% \begin{macro}{arrow fill}
+% Here I setup a key |arrow fill| that
+% can be used to style the arrows drawn on devices.
+%    \begin{macrocode}
+\pgfkeys{/pgf/.cd,
+    arrow fill/.initial=white
+}
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{\router@arrow}  The arrow for the top of the router is aligned
+% along the $x$-axis and then rotated.  The arrow is defined with its ends
+% slightly inset between 0 and 1.  
+%    \begin{macrocode}
+\def\router@arrow{
+    \pgfpathmoveto{\pgfpoint{0.00pt}{0.90pt}}
+    \pgfpathlineto{\pgfpoint{0.2pt}{0.6pt}}
+    \pgfpathlineto{\pgfpoint{0.1pt}{0.6pt}}
+    \pgfpathlineto{\pgfpoint{0.1pt}{0.15pt}}
+    \pgfpathlineto{\pgfpoint{-0.1pt}{0.15pt}}
+    \pgfpathlineto{\pgfpoint{-0.1pt}{0.6pt}}
+    \pgfpathlineto{\pgfpoint{-0.2pt}{0.6pt}}
+    \pgfpathclose
+}
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{\switch@arrow}
+% The arrows drawn on the switch is a little smaller than the router arrow.
+% For ease of drawing on the switch they are slightly shorter than 0.5pt.
+% It fits into 0.3pt vertically to aid placement.
+%    \begin{macrocode}
+\def\switch@arrow{%
+    \pgfpathmoveto{\pgfpoint{0.00pt}{0.10pt}}
+    \pgfpathlineto{\pgfpoint{0.35pt}{0.10pt}}
+    \pgfpathlineto{\pgfpoint{0.35pt}{0.05pt}}
+    \pgfpathlineto{\pgfpoint{0.45pt}{0.15pt}}
+    \pgfpathlineto{\pgfpoint{0.35pt}{0.25pt}}
+    \pgfpathlineto{\pgfpoint{0.35pt}{0.20pt}}
+    \pgfpathlineto{\pgfpoint{0.00pt}{0.20pt}}
+    \pgfpathclose
+}
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{\hub@arrow}
+% The hub arrow is a double ended arrow.
+%    \begin{macrocode}
+\def\hub@arrow{%
+    \pgfpathmoveto{\pgfpoint{0.45pt}{0.00pt}}
+    \pgfpathlineto{\pgfpoint{0.25pt}{0.12pt}}
+    \pgfpathlineto{\pgfpoint{0.25pt}{0.06pt}}
+    \pgfpathlineto{\pgfpoint{-0.25pt}{0.06pt}}
+    \pgfpathlineto{\pgfpoint{-0.25pt}{0.12pt}}
+    \pgfpathlineto{\pgfpoint{-0.45pt}{0.00pt}}
+    \pgfpathlineto{\pgfpoint{-0.25pt}{-0.12pt}}
+    \pgfpathlineto{\pgfpoint{-0.25pt}{-0.06pt}}
+    \pgfpathlineto{\pgfpoint{0.25pt}{-0.06pt}}
+    \pgfpathlineto{\pgfpoint{0.25pt}{-0.12pt}}
+    \pgfpathclose
+}
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{router}
+% For now the router has a fixed size.
+% The router is drawn as a cylinder, and elliptical top and base.
+%
+% Declare the shape name,
+%    \begin{macrocode}
+\pgfdeclareshape{router}{
+%    \end{macrocode}
+
+%
+%     \begin{macro}{\centerpoint}
+%     \begin{macro}{\upperright}
+% The shape needs at a minimum a centre anchor. 
+% The upper-right anchor allows for calculation of the other anchors.
+% The text anchor is required for positioning the supplied text.
+%    \begin{macrocode}
+    \savedanchor\centerpoint{\pgfpoint{0pt}{0pt}}
+	\saveddimen\width{%
+	    \pgfmathsetlength\pgf@xc{\pgfkeysvalueof{/pgf/inner xsep}}%
+		\pgf@x=24pt
+		\advance\pgf@x\pgf@xc
+	}
+	\saveddimen\height{%
+        \pgfmathsetlength\pgf@xc{\pgfkeysvalueof{/pgf/inner ysep}}%
+		\pgfmathsetlength{\@tempdima}{0.5*\ht\pgfnodeparttextbox}
+		\pgfmathmax{8pt}{@\@tempdima}
+		\pgfmathsetlength{\pgf@x}{\pgfmathresult}
+		\advance\pgf@x\pgf@xc
+	}
+    \anchor{center}{\centerpoint}
+	\saveddimen{\textdp}{\pgf@x=\dp\pgfnodeparttextbox}
+	\saveddimen{\textwd}{\pgf@x=\wd\pgfnodeparttextbox}
+	\saveddimen{\textht}{\pgf@x=\wd\pgfnodeparttextbox}
+    \anchor{text}{%
+		\pgf@process{\pgfpoint{-0.5*\textwd}{-1.25*\height}}
+    }
+    \anchor{base}{%
+		\pgf@process{\pgfpoint{0pt}{-1.25*\height}}
+    }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+
+%    \begin{macrocode}
+	\anchor{west}{\pgf@process{\pgfpoint{-\width}{0pt}}}
+	\anchor{east}{\pgf@process{\pgfpoint{\width}{0pt}}}
+	\anchor{north}{\pgf@process{\pgfpoint{0pt}{2*\height}}}
+	\anchor{south}{\pgf@process{\pgfpoint{0pt}{-2*\height}}}
+	\anchor{north west}{\pgf@process{\pgfpoint{-\width}{\height}}}
+	\anchor{north east}{\pgf@process{\pgfpoint{\width}{\height}}}
+	\anchor{south west}{\pgf@process{\pgfpoint{-\width}{-\height}}}
+	\anchor{south east}{\pgf@process{\pgfpoint{\width}{-\height}}}
+%    \end{macrocode}
+
+% \begin{macro}{\backgroundpath}
+% The |\backgroundpath| macro defines the shape of the node.  It is stroked
+% and filled elsewhere.  The pattern is to draw the outline, then any
+% embellishments (the front edge of the top).
+%    \begin{macrocode}
+    \backgroundpath{
+        \pgfmoveto{\pgfpoint{-\width}{\height}}
+        \pgfpatharcto{\width}{\height}{0}{0}{0}{\pgfpoint{\width}{\height}}
+        \pgfpathlineto{\pgfpoint{\width}{-\height}}
+        \pgfpatharcto{\width}{\height}{0}{0}{0}{\pgfpoint{0pt}{-2*\height}}
+        \pgfpatharcto{\width}{\height}{0}{0}{0}{\pgfpoint{-\width}{-\height}}
+        \pgfpathclose
+        \pgfmoveto{\pgfpoint{\width}{\height}}
+        \pgfpatharcto{\width}{\height}{0}{0}{0}{\pgfpoint{0pt}{0pt}}
+        \pgfpatharcto{\width}{\height}{0}{0}{0}{\pgfpoint{-\width}{\height}}
+    }
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{\beforebackgroundpath}
+% The
+%    \begin{macrocode}
+    \beforebackgroundpath{
+        \pgftransformshift{\pgfpoint{0pt}{\height}}
+        \pgftransformtriangle{\pgfpointorigin}%
+                {\pgfpointpolar{-20}{\width and \height}}%
+                {\pgfpointpolar{ 70}{\width and \height}}
+        {\router@arrow}
+        {\pgftransformrotate{180} \router@arrow}
+        {\pgftransformrotate{90} \pgftransformyshift{-1.05} \router@arrow}
+        {\pgftransformrotate{270} \pgftransformyshift{-1.05} \router@arrow}
+        \pgfsetfillcolor{\pgfkeysvalueof{/pgf/arrow fill}}
+        \pgfusepath{draw,fill}
+    }
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{\anchorborder}
+% The
+%    \begin{macrocode}
+    \anchorborder{%
+        \let\true=1
+        \@tempdima=\pgf@x
+        \@tempdimb=\pgf@y
+        \pgfmathparse{atan2(\@tempdimb,\@tempdima)}\let\t=\pgfmathresult
+        \pgfmathparse{atan2(-\height,\width)<=\t && \t<=atan2(\height,\width)}
+        \if\pgfmathresult\true
+            \pgfpointintersectionoflines%
+                    {\pgfpointorigin}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                    {\pgfpoint{\width}{-\height}}{\pgfpoint{\width}{\height}}
+        \fi
+        \pgfmathparse{atan2(\height,\width)<=\t && \t<=atan2(\height,-\width)}
+        \if\pgfmathresult\true
+            \pgfmathparse{(\t-atan2(\height,\width))/(atan2(\height,-\width)-atan2(\height,\width))}
+            \let\s\pgfmathresult
+            \pgfpointarcaxesattime{\s}%
+                {\pgfpoint{0pt}{\height}}{\pgfpoint{\width}{0pt}}{\pgfpoint{0pt}{\height}}{0}{180}
+        \fi
+        \pgfmathparse{atan2(\height,-\width)<=\t || \t<=atan2(-\height,-\width)}
+        \if\pgfmathresult\true
+            \pgfpointintersectionoflines%
+                {\pgfpointorigin}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                {\pgfpoint{-\width}{\height}}{\pgfpoint{-\width}{-\height}}
+        \fi
+        \pgfmathparse{atan2(-\height,-\width)<=\t && \t<=atan2(-\height,\width)}
+        \if\pgfmathresult\true
+            \pgfmathparse{(\t-atan2(-\height,-\width))/(atan2(-\height,\width)-atan2(-\height,-\width))}
+            \let\s\pgfmathresult
+            \pgfpointarcaxesattime{\s}%
+                {\pgfpoint{0pt}{-\height}}{\pgfpoint{\width}{0pt}}{\pgfpoint{0pt}{\height}}{180}{360}
+        \fi
+    }
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+
+% \begin{macro}{switch}
+%    \begin{macrocode}
+\pgfdeclareshape{switch}{
+    \savedanchor\centerpoint{\pgfpointorigin}
+    \anchor{center}{\centerpoint}
+	\saveddimen\width{%
+		\pgfmathsetlength\pgf@xc{\pgfkeysvalueof{/pgf/inner xsep}}
+	    \@tempdima=24pt
+		\@tempdimb=0.5\wd\pgfnodeparttextbox
+		\pgfmathmax{\@tempdima}{\@tempdimb}
+		\pgfmathsetlength{\pgf@x}{\pgfmathresult}
+		\advance\pgf@x\pgf@xc
+	}
+	\saveddimen\height{
+		\pgfmathsetlength\pgf@xc{\pgfkeysvalueof{/pgf/inner ysep}}
+	    \@tempdima=10pt
+		\@tempdimb=\ht\pgfnodeparttextbox
+	    \pgfmathmax{\@tempdima}{\@tempdimb}
+		\pgfmathsetlength{\pgf@x}{\pgfmathresult}
+		\advance\pgf@x\pgf@xc
+		\@tempdimb=\dp\pgfnodeparttextbox
+		\advance\pgf@x\@tempdimb
+	}
+	\saveddimen\textwd{\pgf@x=0.5\wd\pgfnodeparttextbox}
+	\saveddimen\textht{\pgf@x=0.5\ht\pgfnodeparttextbox}
+    \anchor{text}{%
+		\pgfmathsetlength{\@tempdima}{-0.25*\width}
+		\pgfmathsetlength{\@tempdimb}{-0.5*\height}
+		\pgf@process{\pgfpoint{\@tempdima-\textwd}{\@tempdimb-\textht}}
+    }
+    \anchor{base}{%
+		\pgfmathsetlength{\@tempdimb}{-0.5*\height}
+		\pgf@process{\pgfpoint{-0.25*\width}{\@tempdimb-0.5*\textht}}
+    }
+	%
+	\anchor{west}{\pgf@process{\pgfpoint{-\width}{0pt}}}
+	\anchor{east}{\pgf@process{\pgfpoint{\width}{0pt}}}
+	\anchor{north}{\pgf@process{\pgfpoint{0pt}{\height}}}
+	\anchor{south}{\pgf@process{\pgfpoint{0pt}{-\height}}}
+	\anchor{north west}{\pgf@process{\pgfpoint{-0.5*\width}{\height}}}
+	\anchor{north east}{\pgf@process{\pgfpoint{\width}{\height}}}
+	\anchor{south west}{\pgf@process{\pgfpoint{-\width}{-\height}}}
+	\anchor{south east}{\pgf@process{\pgfpoint{0.5*\width}{-\height}}}
+	%
+    \backgroundpath{
+        \pgfpathmoveto{\pgfpoint{\width}{0pt}}
+        \pgfpathlineto{\pgfpoint{\width}{\height}}
+        \pgfpathlineto{\pgfpoint{-0.5*\width}{\height}}
+        \pgfpathlineto{\pgfpoint{-\width}{0pt}}
+        \pgfpathlineto{\pgfpoint{-\width}{-\height}}
+        \pgfpathlineto{\pgfpoint{0.5*\width}{-\height}}
+        \pgfpathclose % end of outline
+        \pgfpathmoveto{\pgfpoint{-\width}{0pt}}
+        \pgfpathlineto{\pgfpoint{0.5*\width}{0pt}}
+        \pgfpathlineto{\pgfpoint{\width}{\height}}
+        \pgfpathmoveto{\pgfpoint{0.5*\width}{0pt}}
+        \pgfpathlineto{\pgfpoint{0.5*\width}{-\height}}
+        %\path (0,0) circle[radius=10pt];
+    }
+    \anchorborder{
+        \let\true=1
+        \@tempdima=\pgf@x
+        \@tempdimb=\pgf@y
+        \pgfmathparse{atan2(\@tempdimb,\@tempdima)}\let\t=\pgfmathresult
+        \pgfmathparse{atan2(  0pt,-\width)}\let\d\pgfmathresult
+        \pgfmathparse{atan2(-\height,-\width)}\let\e\pgfmathresult
+        \pgfmathparse{atan2(-\height, 0.5*\width)}\let\f\pgfmathresult
+        %
+        \pgfmathparse{ atan2(  0pt, \width)<=\t && \t<=atan2( \height, \width) }
+        \if\pgfmathresult\true
+            \pgfpointintersectionoflines%
+                    {\pgfpoint{0pt}{0pt}}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                    {\pgfpoint{\width}{0pt}}{\pgfpoint{\width}{\height}}
+        \fi
+        \pgfmathparse{ atan2( \height, \width)<=\t && \t<=atan2( \height,-0.5*\width) }
+        \if\pgfmathresult\true
+            \pgfpointintersectionoflines%
+                    {\pgfpoint{0pt}{0pt}}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                    {\pgfpoint{\width}{\height}}{\pgfpoint{-0.5*\width}{\height}}
+        \fi
+        \pgfmathparse{ atan2( \height,-0.5*\width)<=\t && \t<=\d }
+        \if\pgfmathresult\true
+            \pgfpointintersectionoflines%
+                    {\pgfpoint{0pt}{0pt}}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                    {\pgfpoint{-0.5*\width}{\height}}{\pgfpoint{-\width}{0pt}}
+        \fi
+        \pgfmathparse{ -\d<=\t && \t<=\e }
+        \if\pgfmathresult\true
+            \pgfpointintersectionoflines%
+                    {\pgfpoint{0pt}{0pt}}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                    {\pgfpoint{-\width}{0pt}}{\pgfpoint{-\width}{-\height}}
+        \fi
+        \pgfmathparse{ \e<=\t && \t<=\f }
+        \if\pgfmathresult\true
+            \pgfpointintersectionoflines%
+                    {\pgfpoint{0pt}{0pt}}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                    {\pgfpoint{-\width}{-\height}}{\pgfpoint{0.5*\width}{-\height}}
+        \fi
+        \pgfmathparse{ \f<=\t && \t<=atan2(  0pt, \width) }
+        \if\pgfmathresult\true
+            \pgfpointintersectionoflines%
+                    {\pgfpoint{0pt}{0pt}}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                    {\pgfpoint{0.5*\width}{-\height}}{\pgfpoint{\width}{0pt}}
+        \fi
+    }
+    \beforebackgroundpath{
+        \pgftransformtriangle{\pgfpoint{-\width}{0pt}}%
+                             {\pgfpoint{0.5*\width}{0pt}}%
+                             {\pgfpoint{-0.5*\width}{\height}}
+        \pgftransformshift{\pgfpoint{0.5pt}{0pt}} 
+            {\pgftransformshift{\pgfpoint{0pt}{0.05pt}} \switch@arrow}
+            {\pgftransformshift{\pgfpoint{0pt}{0.45pt}} \switch@arrow}
+            {\pgftransformxscale{-1}
+                {\pgftransformshift{\pgfpoint{0pt}{.25pt}} \switch@arrow}
+                {\pgftransformshift{\pgfpoint{0pt}{.65pt}} \switch@arrow}
+            }
+        \pgfsetfillcolor{\pgfkeysvalueof{/pgf/arrow fill}}
+        \pgfusepath{fill,draw}
+    }
+}
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{hub}
+% The hub inherits a lot from the switch.
+%    \begin{macrocode}
+\pgfdeclareshape{hub}{
+    \inheritsavedanchors[from=switch]
+    \inheritanchor[from=switch]{center}
+    \inheritanchor[from=switch]{text}
+    \inheritanchor[from=switch]{base}
+    \inheritanchor[from=switch]{north}
+    \inheritanchor[from=switch]{east}
+    \inheritanchor[from=switch]{south}
+    \inheritanchor[from=switch]{west}
+    \inheritanchor[from=switch]{north east}
+    \inheritanchor[from=switch]{north west}
+    \inheritanchor[from=switch]{south east}
+    \inheritanchor[from=switch]{south west}
+    \inheritbackgroundpath[from=switch]
+    \inheritanchorborder[from=switch]
+%    \end{macrocode}
+% \begin{macro}{\beforebackgroundpath}
+% The arrow on the top is particular to the hub
+%    \begin{macrocode}
+    \beforebackgroundpath{
+        \pgftransformtriangle{\pgfpoint{-\width}{0pt}}%
+                             {\pgfpoint{0.5*\width}{0pt}}%
+                             {\pgfpoint{-0.5*\width}{\height}}
+        \pgftransformshift{\pgfpoint{0.5pt}{0.5pt}} 
+        \hub@arrow
+        \pgfsetfillcolor{\pgfkeysvalueof{/pgf/arrow fill}}
+        \pgfusepath{fill,draw}
+    }
+%    \end{macrocode}
+% \end{macro}
+
+%    \begin{macrocode}
+}
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{server}
+% A shape for a server (box)
+%    \begin{macrocode}
+\pgfdeclareshape{server}{
+	\savedanchor{\centerpoint}{\pgfpoint{0pt}{0pt}}
+	\anchor{center}{\pgf@process{\centerpoint}}
+	\saveddimen\textwd{\pgf@x=0.5\wd\pgfnodeparttextbox}
+	\saveddimen\textht{\pgf@x=0.5\ht\pgfnodeparttextbox}
+    \saveddimen{\width}{%
+		\pgfmathsetlength\pgf@xc{0.5*\pgfkeysvalueof{/pgf/inner xsep}}
+		\pgfmathsetlength{\@tempdima}{0.5\wd\pgfnodeparttextbox}
+		\@tempdimb=4pt
+        \pgfmathmax{\@tempdima}{\@tempdimb}
+        \pgfmathsetlength{\pgf@x}{\pgfmathresult}
+		\advance\pgf@x\pgf@xc
+    }
+    \saveddimen{\depth}{
+		\pgfmathsetlength\pgf@x{\pgfkeysvalueof{/pgf/inner ysep}}
+		\advance\pgf@x by 8pt
+	}
+    \saveddimen{\height}{%
+		\pgfmathsetlength\pgf@xc{\pgfkeysvalueof{/pgf/inner ysep}}
+		\pgfmathsetlength{\@tempdima}{0.5\ht\pgfnodeparttextbox}
+		\@tempdimb=10pt
+        \pgfmathmax{\@tempdima}{\@tempdimb}
+        \pgfmathsetlength{\pgf@x}{\pgfmathresult}
+		\advance\pgf@x\pgf@xc
+	}
+    \saveddimen{\thickness}{
+		\pgfmathsetlength\@tempdima{\pgfkeysvalueof{/pgf/inner ysep}}
+		\pgf@x=8pt
+		\advance\pgf@x\@tempdima
+	}
+    \anchor{text}{%
+        \pgf@x=-\textwd
+        \pgf@y=0pt
+    }
+	\anchor{base}{\pgfpoint{0pt}{0pt}}
+	%
+	\anchor{west}{\pgf@process{\pgfpoint{-\width}{0pt}}}
+	\anchor{east}{\pgf@process{\pgfpoint{\width+\thickness}{0pt}}}
+	\anchor{north}{\pgf@process{\pgfpoint{0pt}{\height+depth}}}
+	\anchor{south}{\pgf@process{\pgfpoint{0pt}{-\depth}}}
+	\anchor{north west}{\pgf@process{\pgfpoint{-\width+\thickness}{\height+\depth}}}
+	\anchor{north east}{\pgf@process{\pgfpoint{\width+\thickness}{\height+\depth}}}
+	\anchor{south west}{\pgf@process{\pgfpoint{-\width}{-\height}}}
+	\anchor{south east}{\pgf@process{\pgfpoint{0.5*\width}{-\height}}}
+	%
+     \backgroundpath{%
+        \pgfpathmoveto{\pgfpoint{\width+\thickness}{0pt}}
+        \pgfpathlineto{\pgfpoint{\width+\thickness}{\height+\depth}}
+        \pgfpathlineto{\pgfpoint{-\width+\thickness}{\height+\depth}}
+        \pgfpathlineto{\pgfpoint{-\width}{\height}}
+        \pgfpathlineto{\pgfpoint{-\width}{-\depth}}
+        \pgfpathlineto{\pgfpoint{\width}{-\depth}}
+        \pgfpathclose
+        %
+        \pgfpathmoveto{\pgfpoint{-\width}{\height}}
+        \pgfpathlineto{\pgfpoint{\width}{\height}}
+        \pgfpathlineto{\pgfpoint{\width+\thickness}{\height+\depth}}
+        \pgfpathmoveto{\pgfpoint{\width}{\height}}
+        \pgfpathlineto{\pgfpoint{\width}{-\depth}}
+	}
+	\beforebackgroundpath{
+        \setlength{\@tempdima}{\width-2pt}
+		\setlength{\@tempdimb}{-\pgfkeysvalueof{/pgf/inner ysep}}
+        \pgfpathmoveto{\pgfpoint{-\@tempdima}{\@tempdimb}}
+        \pgfpathlineto{\pgfpoint{\@tempdima}{\@tempdimb}}
+        \advance\@tempdimb by -2pt
+        \pgfpathmoveto{\pgfpoint{-\@tempdima}{\@tempdimb}}
+        \pgfpathlineto{\pgfpoint{\@tempdima}{\@tempdimb}}
+        \advance\@tempdimb by -2pt
+        \pgfpathmoveto{\pgfpoint{-\@tempdima}{\@tempdimb}}
+        \pgfpathlineto{\pgfpoint{\@tempdima}{\@tempdimb}}
+        \advance\@tempdimb by -2pt
+        \pgfpathmoveto{\pgfpoint{-\@tempdima}{\@tempdimb}}
+        \pgfpathlineto{\pgfpoint{\@tempdima}{\@tempdimb}}
+		\pgfusepath{draw}
+    }
+    \anchorborder{
+        \let\true=1
+        \@tempdima=\pgf@x
+        \@tempdimb=\pgf@y
+        \pgfmathanglebetweenpoints{\centerpoint}%
+            {\pgfpoint{\@tempdima}{\@tempdimb}}
+        \let\t=\pgfmathresult
+        \pgfmathanglebetweenpoints{\centerpoint}%
+            {\pgfpoint{\width+\thickness}{\height+\depth}}
+        \let\a=\pgfmathresult
+        \pgfmathnotgreater{\t}{\a}
+        \if\pgfmathresult\true
+            \pgf@process{\pgfpointintersectionoflines%
+                {\centerpoint}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                {\pgfpoint{\width+\thickness}{\height+\depth}}%
+                {\pgfpoint{\width+\thickness}{0pt}}%
+            }
+        \else
+        \pgfmathanglebetweenpoints{\centerpoint}%
+            {\pgfpoint{-\width+\thickness}{\height+\depth}}
+        \let\a=\pgfmathresult
+        \pgfmathnotgreater{\t}{\a}
+        \if\pgfmathresult\true
+            \pgf@process{\pgfpointintersectionoflines%
+                {\centerpoint}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                {\pgfpoint{-\width+\thickness}{\height+\depth}}%
+                {\pgfpoint{\width+\thickness}{\height+\depth}}%
+            }
+        \else
+        \pgfmathanglebetweenpoints{\centerpoint}{\pgfpoint{-\width}{\height}}
+        \let\a=\pgfmathresult
+        \pgfmathnotgreater{\t}{\a}
+        \if\pgfmathresult\true
+            \pgf@process{\pgfpointintersectionoflines%
+                {\centerpoint}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                {\pgfpoint{-\width}{\height}}%
+                {\pgfpoint{-\width+\thickness}{\height+\depth}}%
+            }
+        \else
+        \pgfmathanglebetweenpoints{\centerpoint}{\pgfpoint{-\width}{-\depth}}
+        \let\a=\pgfmathresult
+        \pgfmathnotgreater{\t}{\a}
+        \if\pgfmathresult\true
+            \pgf@process{\pgfpointintersectionoflines%
+                {\centerpoint}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                {\pgfpoint{-\width}{-\depth}}%
+                {\pgfpoint{-\width}{\height}}%
+            }
+        \else
+        \pgfmathanglebetweenpoints{\centerpoint}{\pgfpoint{\width}{-\depth}}
+        \let\a=\pgfmathresult
+        \pgfmathnotgreater{\t}{\a}
+        \if\pgfmathresult\true
+            \pgf@process{\pgfpointintersectionoflines%
+                {\centerpoint}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                {\pgfpoint{\width}{-\depth}}%
+                {\pgfpoint{-\width}{-\depth}}%
+            }
+        \else
+            \pgf@process{\pgfpointintersectionoflines%
+                {\centerpoint}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+                {\pgfpoint{\width+\thickness}{0pt}}%
+                {\pgfpoint{\width}{-\depth}}%
+            }
+        \fi\fi\fi\fi\fi
+    }
+}
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{pc}
+%    \begin{macrocode}
+\pgfdeclareshape{pc}{
+	\savedanchor\centerpoint{\pgfpoint{0pt}{0pt}}
+	\anchor{center}{\pgf@process{\centerpoint}}
+	\saveddimen\textwd{\pgf@x=\wd\pgfnodeparttextbox}
+	\saveddimen\textht{\pgf@x=\ht\pgfnodeparttextbox}
+	\saveddimen\textdp{\pgf@x=\dp\pgfnodeparttextbox}
+	\saveddimen{\width}{%
+		\pgfmathsetlength{\@tempdima}{0.5*\wd\pgfnodeparttextbox+4pt}
+		\pgfmathsetlength{\@tempdimb}{14pt}
+		\pgfmathsetlength{\pgf@xc}{0.5*\pgfkeysvalueof{/pgf/inner xsep}}
+		\pgfmathmax{\@tempdima}{\@tempdimb}
+		\pgfmathsetlength{\pgf@x}{\pgfmathresult}
+		\advance\pgf@x\pgf@xc
+	}
+	\saveddimen{\height}{%
+	    \pgfmathsetlength{\@tempdima}{\ht\pgfnodeparttextbox+4pt}
+	    \pgfmathsetlength{\@tempdimb}{8pt}
+		\pgfmathmax{\@tempdima}{\@tempdimb}
+		\pgfmathsetlength{\pgf@x}{\pgfmathresult}
+		\pgfmathsetlength{\pgf@xc}{\pgfkeysvalueof{/pgf/inner ysep}}
+		\advance\pgf@x\pgf@xc
+	}
+	\saveddimen{\depth}{%
+	    \pgfmathsetlength{\@tempdima}{\dp\pgfnodeparttextbox+4pt}
+	    \pgfmathsetlength{\@tempdimb}{4pt}
+		\pgfmathmax{\@tempdima}{\@tempdimb}
+		\pgfmathsetlength{\pgf@x}{\pgfmathresult}
+		\pgfmathsetlength{\pgf@xc}{\pgfkeysvalueof{/pgf/inner ysep}}
+		\advance\pgf@x\pgf@xc
+	}
+	\anchor{text}{\pgfpoint{-0.5*\textwd}{0pt}}
+	\anchor{base}{\pgfpoint{0pt}{0pt}}
+	%
+	%
+	\anchor{west}{\pgf@process{\pgfpoint{-\width}{0pt}}}
+	\anchor{east}{\pgf@process{\pgfpoint{\width}{0pt}}}
+	\anchor{north}{\pgf@process{\pgfpoint{0pt}{\height}}}
+	\anchor{south}{\pgf@process{\pgfpoint{0pt}{-2*\depth}}}
+	\anchor{north west}{\pgf@process{\pgfpoint{-\width}{\height}}}
+	\anchor{north east}{\pgf@process{\pgfpoint{\width}{\height}}}
+	\anchor{south west}{\pgf@process{\pgfpoint{-\width-\depth}{-2*\depth}}}
+	\anchor{south east}{\pgf@process{\pgfpoint{\width+\depth}{-2*\depth}}}
+	%
+	\backgroundpath{%
+		\pgfpathrectangle{\pgfpoint{-\width}{-\depth}}{\pgfpoint{2*\width}{\height+\depth}}
+		\pgfpathrectangle{\pgfpoint{-\width+2pt}{-\depth+2pt}}{\pgfpoint{2*\width-4pt}{\height+\depth-4pt}}
+		\pgfpathmoveto{\pgfpoint{-\width}{-\depth}}
+		\pgfpathlineto{\pgfpoint{-\width-\depth}{-2*\depth}}
+		\pgfpathlineto{\pgfpoint{\width+\depth}{-2*\depth}}
+		\pgfpathlineto{\pgfpoint{\width}{-\depth}}
+    }
+    \anchorborder{
+        \let\true=1
+        \@tempdima=\pgf@x
+        \@tempdimb=\pgf@y
+        \pgfmathanglebetweenpoints{\centerpoint}%
+                    {\pgfpoint{\@tempdima}{\@tempdimb}}
+        \let\t=\pgfmathresult
+		%
+        \pgfmathanglebetweenpoints{\centerpoint}%
+		            {\pgfpoint{\width}{\width}}    
+        \let\a=\pgfmathresult
+        \pgfmathnotgreater{\t}{\a}
+        \if\pgfmathresult\true
+            \pgf@process{\pgfpointintersectionoflines%
+                    {\centerpoint}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+        			{\pgfpoint{\width}{-\depth}}%        
+		            {\pgfpoint{\width}{\width}}    
+            }
+        \else
+        \pgfmathanglebetweenpoints{\centerpoint}%
+		            {\pgfpoint{-\width}{\width}}    
+        \let\a=\pgfmathresult
+        \pgfmathnotgreater{\t}{\a}
+        \if\pgfmathresult\true
+            \pgf@process{\pgfpointintersectionoflines%
+                    {\centerpoint}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+		            {\pgfpoint{\width}{\width}}%    
+		            {\pgfpoint{-\width}{\width}}    
+            }
+        \else
+        \pgfmathanglebetweenpoints{\centerpoint}%
+		            {\pgfpoint{-\width}{-\depth}}    
+        \let\a=\pgfmathresult
+        \pgfmathnotgreater{\t}{\a}
+        \if\pgfmathresult\true
+            \pgf@process{\pgfpointintersectionoflines%
+                    {\centerpoint}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+		            {\pgfpoint{-\width}{\width}}%    
+		            {\pgfpoint{-\width}{-\depth}}    
+            }
+        \else
+        \pgfmathanglebetweenpoints{\centerpoint}%
+		            {\pgfpoint{-(\width+\depth)}{-\width}}
+        \let\a=\pgfmathresult
+        \pgfmathnotgreater{\t}{\a}
+        \if\pgfmathresult\true
+            \pgf@process{\pgfpointintersectionoflines%
+                    {\centerpoint}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+		            {\pgfpoint{-\width}{-\depth}}%    
+		            {\pgfpoint{-(\width+\depth)}{-\width}}
+            }
+        \else
+        \pgfmathanglebetweenpoints{\centerpoint}%
+		            {\pgfpoint{(\width+\depth)}{-\width}}
+        \let\a=\pgfmathresult
+        \pgfmathnotgreater{\t}{\a}
+        \if\pgfmathresult\true
+            \pgf@process{\pgfpointintersectionoflines%
+                    {\centerpoint}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+		            {\pgfpoint{-(\width+\depth)}{-2*\depth}}%
+		            {\pgfpoint{(\width+\depth)}{-2*\depth}}
+            }
+        \else
+        \pgfmathanglebetweenpoints{\centerpoint}%
+		            {\pgfpoint{\width}{-\depth}}
+        \let\a=\pgfmathresult
+        \pgfmathnotgreater{\t}{\a}
+        \if\pgfmathresult\true
+            \pgf@process{\pgfpointintersectionoflines%
+                    {\centerpoint}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+		            {\pgfpoint{(\width+\depth)}{-\width}}%
+		            {\pgfpoint{\width}{-\depth}}
+            }
+        \else
+            \pgf@process{\pgfpointintersectionoflines%
+                    {\centerpoint}{\pgfpoint{\@tempdima}{\@tempdimb}}%
+		            {\pgfpoint{\width}{-\depth}}%
+		            {\pgfpoint{\width}{\width}}    
+            }
+			\fi
+			\fi
+			\fi
+			\fi
+			\fi
+			\fi
+	}
+ }
+%%    \end{macrocode}
+%% \end{macro}
+%
+%    \begin{macrocode}
+\makeatother
+%    \end{macrocode}
+
